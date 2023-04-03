@@ -8,8 +8,8 @@ class ActorPlayer:
 		self.mainWindow.resizable(False, False)
 		self.mainWindow["bg"]="green"
 
-		self.mainFrame = Frame(self.mainWindow, bg="green", width=1400, height=800)
-		self.mainFrame_j1 = Frame(self.mainWindow, bg="green", width=1400, height=800)
+		self.frame_cartas_dealer = Frame(self.mainWindow, bg="green", width=1400, height=800)
+		self.frame_cartas_j1 = Frame(self.mainWindow, bg="green", width=1400, height=800)
 
 		# Carrega imagens
 		self.back = PhotoImage(file="images/cards/back.png") #pyimage1
@@ -19,8 +19,8 @@ class ActorPlayer:
 		self.dealer_label = Label(self.mainWindow, bg="gray", text='Dealer', font="Arial 17 bold")
 		self.dealer_label.place(relx=0.5, rely=0.05, anchor=CENTER)
 
-		self.mainFrame.place(relx=0.5, rely=0.15, anchor=CENTER)
-		self.mainFrame_j1.place(relx=0.5, rely=0.73, anchor=CENTER)
+		self.frame_cartas_dealer.place(relx=0.5, rely=0.15, anchor=CENTER)
+		self.frame_cartas_j1.place(relx=0.5, rely=0.73, anchor=CENTER)
 
 		self.viewTier = []
 		self.viewTier_j1 = []
@@ -48,17 +48,17 @@ class ActorPlayer:
 		self.mainWindow.mainloop()
 
 	def add_card_j1(self):
-		card_label_j1 = Label(self.mainFrame_j1, bd=0.1, relief="solid", image=self.heart_1)
+		card_label_j1 = Label(self.frame_cartas_j1, bd=0.1, relief="solid", image=self.heart_1)
 		card_label_j1.grid(row=2, column=len(self.viewTier)+1)
 		self.viewTier.append(card_label_j1)
 
 	def add_back_card_dealer(self):
-		card_label = Label(self.mainFrame, bd=0.1, relief="solid", image=self.back)
+		card_label = Label(self.frame_cartas_dealer, bd=0.1, relief="solid", image=self.back)
 		card_label.grid(row=2, column=len(self.viewTier)+1)
 		self.viewTier.append(card_label)
 
 	def add_card_dealer(self):
-		card_label = Label(self.mainFrame, bd=0.1, relief="solid", image=self.heart_1)
+		card_label = Label(self.frame_cartas_dealer, bd=0.1, relief="solid", image=self.heart_1)
 		card_label.grid(row=2, column=len(self.viewTier)+1)
 		self.viewTier.append(card_label)
 
