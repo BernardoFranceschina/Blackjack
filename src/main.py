@@ -1,6 +1,6 @@
 from tkinter import *
 
-class ActorPlayer:
+class PlayerInterface:
 	def __init__(self):
 		self.mainWindow = Tk()
 		self.mainWindow.title("Blackjack")
@@ -30,14 +30,14 @@ class ActorPlayer:
 		self.add_card_j1()
 
 		# Botões das opções dos players
-		self.player_hit_label = Button(self.mainWindow, bg="gray", text='Hit', font="Arial 14 bold", command=self.hit)
-		self.player_stand_label = Button(self.mainWindow, bg="gray", text='Stand', font="Arial 14 bold", command=self.stand)
-		self.player_double_label = Button(self.mainWindow, bg="gray", text='Double', font="Arial 14 bold", command=self.double)
-		self.player_surrender_label = Button(self.mainWindow, bg="gray", text='Surrender', font="Arial 14 bold", command=self.surrender)
-		self.player_hit_label.place(relx=0.35, rely=0.35, anchor=CENTER, width=140)
-		self.player_stand_label.place(relx=0.45, rely=0.35, anchor=CENTER, width=140)
-		self.player_double_label.place(relx=0.55, rely=0.35, anchor=CENTER, width=140)
-		self.player_surrender_label.place(relx=0.65, rely=0.35, anchor=CENTER, width=140)
+		self.player_hit_button = Button(self.mainWindow, bg="gray", text='Hit', font="Arial 14 bold", command=self.hit)
+		self.player_stand_button = Button(self.mainWindow, bg="gray", text='Stand', font="Arial 14 bold", command=self.stand)
+		self.player_double_button = Button(self.mainWindow, bg="gray", text='Double', font="Arial 14 bold", command=self.double)
+		self.player_surrender_button = Button(self.mainWindow, bg="gray", text='Surrender', font="Arial 14 bold", command=self.surrender)
+		self.player_hit_button.place(relx=0.35, rely=0.35, anchor=CENTER, width=140)
+		self.player_stand_button.place(relx=0.45, rely=0.35, anchor=CENTER, width=140)
+		self.player_double_button.place(relx=0.55, rely=0.35, anchor=CENTER, width=140)
+		self.player_surrender_button.place(relx=0.65, rely=0.35, anchor=CENTER, width=140)
 
 		# Label jogador1 e aposta
 		self.dealer_label = Label(self.mainWindow, bg="gray", text='Jogador 01', font="Arial 17 bold")
@@ -74,4 +74,4 @@ class ActorPlayer:
 	def surrender(self):
 		pass
 
-ActorPlayer()
+PlayerInterface()
