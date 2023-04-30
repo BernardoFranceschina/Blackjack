@@ -1,6 +1,11 @@
+import os
 from tkinter import *
+#from tkinter import simpledialog
 
-class PlayerInterface:
+from py_netgames_client.tkinter_client.PyNetgamesServerProxy import PyNetgamesServerProxy
+from py_netgames_client.tkinter_client.PyNetgamesServerListener import PyNetgamesServerListener
+
+class PlayerInterface(PyNetgamesServerListener):
 	def __init__(self):
 		self.mainWindow = Tk()
 		self.mainWindow.title("Blackjack")
@@ -11,10 +16,12 @@ class PlayerInterface:
 		self.frame_cartas_dealer = Frame(self.mainWindow, bg="green", width=1400, height=800)
 		self.frame_cartas_j1 = Frame(self.mainWindow, bg="green", width=1400, height=800)
 
-		# Carrega imagens
-		self.back = PhotoImage(file="images/cards/back.png") #pyimage1
-		self.heart_1 = PhotoImage(file="images/cards/1_heart.png") #pyimage2
+		#player_name = simpledialog.askstring(title="Player identification", prompt="Qual o seu nome?")
 
+		# Carrega imagens )
+		self.back = PhotoImage(file=os.path.join(os.path.dirname(__file__), "images/cards/back.png")) #pyimage1
+		self.heart_1 = PhotoImage(file=os.path.join(os.path.dirname(__file__), "images/cards/1_heart.png")) #pyimage2
+		
 		# Label para nome do dealer
 		self.dealer_label = Label(self.mainWindow, bg="gray", text='Dealer', font="Arial 17 bold")
 		self.dealer_label.place(relx=0.5, rely=0.05, anchor=CENTER)
@@ -45,6 +52,9 @@ class PlayerInterface:
 		self.dealer_label = Label(self.mainWindow, bg="gray", text='Aposta: 10', font="Arial 12 bold")
 		self.dealer_label.place(relx=0.5, rely=0.636, anchor=CENTER)
 
+		self.add_listener()
+		self.send_connect()
+
 		self.mainWindow.mainloop()
 
 	def add_card_j1(self):
@@ -74,4 +84,34 @@ class PlayerInterface:
 	def surrender(self):
 		pass
 
-PlayerInterface()
+	#----------------------- Pynetgames ----------------------------------
+
+	def add_listener(self):
+		self.server_proxy = PyNetgamesServerProxy()
+		self.server_proxy.add_listener(self)
+
+	def send_connect(self):
+		self.server_proxy.send_connect("wss://py-netgames-server.fly.dev")
+
+	def send_match(self):
+		self.server_proxy.send_match(2)
+
+	def receive_connection_success(self):
+		print('--------------\nCONETADO ')
+		self.send_match()
+
+	def receive_disconnect(self):
+		pass
+		
+	def receive_error(self, error):
+		pass
+
+	def receive_match(self, match):
+		print('--------------\nPARTIDA INICIADA')
+		print('--------------\nORDEM: ', match.position)
+		print('--------------\nmatch_id: ', match.match_id)
+		print('--------------')
+
+	def receive_move(self, move):
+		pass
+
