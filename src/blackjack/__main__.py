@@ -1,5 +1,5 @@
 import logging
-from blackjack.game_logic.PlayerInterface import PlayerInterface
+from game_logic.PlayerInterface import PlayerInterface
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
