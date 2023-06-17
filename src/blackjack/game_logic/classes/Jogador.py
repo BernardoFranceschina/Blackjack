@@ -1,15 +1,15 @@
 from Mao import *
-
+from Baralho import *
 class Jogador():
-    def __init__(self, nome, fichas, mao, vezDeJogar, apostaAtual:int, primeira_jogada:bool, jogando_rodada:bool):
+    def __init__(self, nome, position, mao = []):
         self._nome = nome
-        self._fichas = fichas
-        self._mao = Mao()
-        self._vezDeJogar = vezDeJogar
-        self._apostaAtual = apostaAtual
-        self._primeira_jogada = primeira_jogada
-        self._jogando_rodada = jogando_rodada
-
+        self._mao = Mao(mao)
+        self._position = position
+        self._fichas = 100
+        self._apostaAtual = 0
+        self._vezDeJogar = False
+        self._primeira_jogada = False
+        self._jogando_rodada = False
 
     def turno(self):
         return self._vezDeJogar
@@ -23,7 +23,7 @@ class Jogador():
     def verificarMao(self):
         return self._mao.getValor()
 
-    def Passar_vez(self):
+    def passar_vez(self):
         self._vezDeJogar = False
 
     def primeira_jogada(self):
@@ -34,4 +34,19 @@ class Jogador():
     
     def setJogando_rodada(self):
         pass
+
+    def adicionarCarta(self, carta):
+        self._mao.adicionaCarta(carta)
+        return self._mao
+
+# baralho = Baralho()
+# baralho.criar_baralho()
+# baralho = baralho.embaralhar()
+
+# jogador = Jogador('B', 1)
+
+# add1 = baralho[:2]
+# for i in add1:
+#     jogador.adicionarCarta(i)
+# print(jogador.verificarMao())
 

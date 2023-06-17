@@ -16,11 +16,8 @@ class PlayerInterface(PyNetgamesServerListener):
 		self.frame_cartas_dealer = Frame(self.mainWindow, bg="green", width=1400, height=800)
 		self.frame_cartas_j1 = Frame(self.mainWindow, bg="green", width=1400, height=800)
 
-		#player_name = simpledialog.askstring(title="Player identification", prompt="Qual o seu nome?")
-
-		# Carrega imagens )
+		# Carrega imagens
 		self.back = PhotoImage(file=os.path.join(os.path.dirname(__file__), "images/cards/back.png")) #pyimage1
-		self.heart_1 = PhotoImage(file=os.path.join(os.path.dirname(__file__), "images/cards/1_heart.png")) #pyimage2
 		
 		# Label para nome do dealer
 		self.dealer_label = Label(self.mainWindow, bg="gray", text='Dealer', font="Arial 17 bold")
@@ -33,8 +30,7 @@ class PlayerInterface(PyNetgamesServerListener):
 		self.viewTier_j1 = []
 		self.add_card_dealer()
 		self.add_back_card_dealer()
-		self.add_card_j1()
-		self.add_card_j1()
+		self.add_card_j1('1P')
 
 		# Botões das opções dos players
 		self.player_hit_button = Button(self.mainWindow, bg="gray", text='Hit', font="Arial 14 bold", command=self.hit)
@@ -57,8 +53,13 @@ class PlayerInterface(PyNetgamesServerListener):
 
 		self.mainWindow.mainloop()
 
-	def add_card_j1(self):
-		card_label_j1 = Label(self.frame_cartas_j1, bd=0.1, relief="solid", image=self.heart_1)
+	def create_card(self, card_name):
+		carta = PhotoImage(file=os.path.join(os.path.dirname(__file__), "images/cards/" + card_name + ".png"))
+		return carta
+
+	def add_card_j1(self, carta):
+		card = self.create_card(carta)
+		card_label_j1 = Label(self.frame_cartas_j1, bd=0.1, relief="solid", image=card)
 		card_label_j1.grid(row=2, column=len(self.viewTier)+1)
 		self.viewTier.append(card_label_j1)
 
@@ -68,18 +69,18 @@ class PlayerInterface(PyNetgamesServerListener):
 		self.viewTier.append(card_label)
 
 	def add_card_dealer(self):
-		card_label = Label(self.frame_cartas_dealer, bd=0.1, relief="solid", image=self.heart_1)
+		card_label = Label(self.frame_cartas_dealer, bd=0.1, relief="solid", image=self.back)
 		card_label.grid(row=2, column=len(self.viewTier)+1)
 		self.viewTier.append(card_label)
 
 	def hit(self):
-		self.add_card_j1()
+		self.add_card_j1('1P')
 
 	def stand(self):
 		pass
 
 	def double(self):
-		self.add_card_j1()
+		self.add_card_j1('1E')
 
 	def surrender(self):
 		pass
