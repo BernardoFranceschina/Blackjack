@@ -1,6 +1,5 @@
 import os
 from tkinter import *
-#from tkinter import simpledialog
 
 from py_netgames_client.tkinter_client.PyNetgamesServerProxy import PyNetgamesServerProxy
 from py_netgames_client.tkinter_client.PyNetgamesServerListener import PyNetgamesServerListener
@@ -13,13 +12,10 @@ class PlayerInterface(PyNetgamesServerListener):
 		self.mainWindow.resizable(False, False)
 		self.mainWindow["bg"]="green"
 
-		self.frame_cartas_dealer = Frame(self.mainWindow, bg="green", width=1400, height=800)
-		self.frame_cartas_j1 = Frame(self.mainWindow, bg="green", width=349, height=200)
-		self.frame_cartas_j2 = Frame(self.mainWindow, bg="green", width=349, height=200)
-		self.frame_cartas_j3 = Frame(self.mainWindow, bg="green", width=349, height=200)
-		self.frame_cartas_j4 = Frame(self.mainWindow, bg="green", width=349, height=200)
-
-		# Carrega imagens )
+		self.frames_jogadores = [Frame(self.mainWindow, width=349, height=200) for i in range(4)]
+		self.frame_cartas_dealer = Frame(self.mainWindow, width=1400, height=800)
+		
+		# Carrega imagens
 		self.back = PhotoImage(file=os.path.join(os.path.dirname(__file__), "images/cards/back.png")) #pyimage1
 		self.heart_1 = PhotoImage(file=os.path.join(os.path.dirname(__file__), "images/cards/1P.png")) #pyimage2
 		
@@ -27,44 +23,54 @@ class PlayerInterface(PyNetgamesServerListener):
 		self.dealer_label = Label(self.mainWindow, bg="gray", text='Dealer', font="Arial 17 bold")
 		self.dealer_label.place(relx=0.5, rely=0.05, anchor=CENTER)
 
-		self.frame_cartas_dealer.place(relx=0.5, rely=0.15, anchor=CENTER)
-		self.frame_cartas_j1.place(relx=0.2, rely=0.75, anchor=CENTER)
-		self.frame_cartas_j2.place(relx=0.4, rely=0.75, anchor=CENTER)
-		self.frame_cartas_j3.place(relx=0.6, rely=0.75, anchor=CENTER)
-		self.frame_cartas_j4.place(relx=0.8, rely=0.75, anchor=CENTER)
+		for index, frame_jogador in enumerate(self.frames_jogadores):
+			frame_jogador.place(relx=(index+1)*0.2, rely=0.75, anchor=CENTER)
 
-		self.viewTier = []
+		self.grid_dealer = []
+		self.grid_jogadores = []
+
 		self.add_card_dealer()
-		self.add_card_j1()
-		self.add_card_j2()
-		self.add_card_j2()
-		self.add_card_j3()
-		self.add_card_j4()
-		self.add_card_j4()
-		self.add_card_j4()
 
+		self.add_card_jogador(0)
+		self.add_card_jogador(1)
+		self.add_card_jogador(2)
+		self.add_card_jogador(3)
+		
 		# Botões das opções dos players
 		self.player_hit_button = Button(self.mainWindow, bg="gray", text='Hit', font="Arial 14 bold", command=self.hit)
 		self.player_hit_button.place(relx=0.35, rely=0.35, anchor=CENTER, width=140)
-
 		self.player_stand_button = Button(self.mainWindow, bg="gray", text='Stand', font="Arial 14 bold", command=self.stand)
 		self.player_stand_button.place(relx=0.45, rely=0.35, anchor=CENTER, width=140)
-
 		self.player_double_button = Button(self.mainWindow, bg="gray", text='Double', font="Arial 14 bold", command=self.double)
 		self.player_double_button.place(relx=0.55, rely=0.35, anchor=CENTER, width=140)
-
 		self.player_surrender_button = Button(self.mainWindow, bg="gray", text='Surrender', font="Arial 14 bold", command=self.surrender)
 		self.player_surrender_button.place(relx=0.65, rely=0.35, anchor=CENTER, width=140)
+		#FIM Botões das opções dos players
 
-		self.add_player_label('Jogador 02', 100, 10, 1)
 		self.add_player_label('Jogador 01', 100, 10, 0)
+		self.add_player_label('Jogador 02', 100, 10, 1)
 		self.add_player_label('Jogador 03', 100, 10, 2)
 		self.add_player_label('Jogador 04', 100, 10, 3)
+		
+		# self.disable_buttons()
+		# self.enable_buttons()
 
-		# self.add_listener()
-		# self.send_connect()
+		self.add_listener()
+		self.send_connect()
 
 		self.mainWindow.mainloop()
+
+	def disable_buttons(self):
+		self.player_hit_button.configure(state='disable')
+		self.player_stand_button.configure(state='disable')
+		self.player_double_button.configure(state='disable')
+		self.player_surrender_button.configure(state='disable')
+
+	def enable_buttons(self):
+		self.player_hit_button.configure(state='normal')
+		self.player_stand_button.configure(state='normal')
+		self.player_double_button.configure(state='normal')
+		self.player_surrender_button.configure(state='normal')
 
 	def add_player_label(self, jogador, fichas, aposta, numero_jogador):
 		jogador_label = Label(self.mainWindow, bg="gray", text=jogador, font="Arial 17 bold")
@@ -74,42 +80,27 @@ class PlayerInterface(PyNetgamesServerListener):
 		aposta_label = Label(self.mainWindow, bg="gray", text='Aposta: ' + str(aposta), font="Arial 12")
 		aposta_label.place(relx=(numero_jogador+1) * 0.2, rely=0.66, anchor=CENTER)
 
-	def add_card_j1(self):
-		card_label_j1 = Label(self.frame_cartas_j1, bd=0.1, relief="solid", image=self.heart_1)
-		card_label_j1.grid(row=2, column=len(self.viewTier)+1)
-		self.viewTier.append(card_label_j1)
-
-	def add_card_j2(self):
-		card_label_j2 = Label(self.frame_cartas_j2, bd=0.1, relief="solid", image=self.heart_1)
-		card_label_j2.grid(row=2, column=len(self.viewTier)+1)
-		self.viewTier.append(card_label_j2)
-
-	def add_card_j3(self):
-		card_label_j3 = Label(self.frame_cartas_j3, bd=0.1, relief="solid", image=self.heart_1)
-		card_label_j3.grid(row=2, column=len(self.viewTier)+1)
-		self.viewTier.append(card_label_j3)
-
-	def add_card_j4(self):
-		card_label_j4 = Label(self.frame_cartas_j4, bd=0.1, relief="solid", image=self.heart_1)
-		card_label_j4.grid(row=2, column=len(self.viewTier)+1)
-		self.viewTier.append(card_label_j4)
+	def add_card_jogador(self, numero_jogador):
+		carta = Label(self.frames_jogadores[numero_jogador], bd=0.1, relief="solid", image=self.heart_1)
+		carta.grid(row=0, column=len(self.grid_jogadores)+1)
+		self.grid_jogadores.append(carta)
 
 	def add_card_dealer(self):
-		card_label = Label(self.frame_cartas_dealer, bd=0.1, relief="solid", image=self.back)
-		card_label.grid(row=2, column=len(self.viewTier)+1)
-		self.viewTier.append(card_label)
+		carta = Label(self.frame_cartas_dealer, bd=0.1, relief="solid", image=self.heart_1)
+		carta.grid(row=0, column=len(self.grid_dealer)+1)
+		self.grid_dealer.append(carta)
 
 	def hit(self):
-		self.add_card_j1()
+		self.add_card_dealer()
 
 	def stand(self):
-		pass
+		self.add_card_jogador(1)
 
 	def double(self):
-		self.add_card_j1()
+		self.add_card_jogador(2)
 
 	def surrender(self):
-		pass
+		self.add_card_jogador(3)
 
 	#----------------------- Pynetgames ----------------------------------
 
