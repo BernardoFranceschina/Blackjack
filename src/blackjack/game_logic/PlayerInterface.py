@@ -6,36 +6,37 @@ from py_netgames_client.tkinter_client.PyNetgamesServerListener import PyNetgame
 
 class PlayerInterface(PyNetgamesServerListener):
 	def __init__(self):
+		# Configuração inicial da tela do jogo
 		self.mainWindow = Tk()
 		self.mainWindow.title("Blackjack")
 		self.mainWindow.geometry("1400x800")
 		self.mainWindow.resizable(False, False)
 		self.mainWindow["bg"]="green"
 
+		# Cria as instancias dos frames
 		self.frames_jogadores = [Frame(self.mainWindow, width=349, height=200) for i in range(4)]
 		self.frame_cartas_dealer = Frame(self.mainWindow, width=1400, height=800)
-		
-		# Carrega imagens
-		self.back = PhotoImage(file=os.path.join(os.path.dirname(__file__), "images/cards/back.png")) #pyimage1
-		self.heart_1 = PhotoImage(file=os.path.join(os.path.dirname(__file__), "images/cards/1P.png")) #pyimage2
-		
+
 		# Label para nome do dealer
 		self.dealer_label = Label(self.mainWindow, bg="gray", text='Dealer', font="Arial 17 bold")
 		self.dealer_label.place(relx=0.5, rely=0.05, anchor=CENTER)
 
+		# Posiciona os frames em que ficarão as cartas, tanto dos jogadores quando do dealer
 		for index, frame_jogador in enumerate(self.frames_jogadores):
 			frame_jogador.place(relx=(index+1)*0.2, rely=0.75, anchor=CENTER)
+		self.frame_cartas_dealer.place(relx=0.5, rely=0.15, anchor=CENTER)
 
 		self.grid_dealer = []
 		self.grid_jogadores = []
-
-		self.add_card_dealer()
-
-		self.add_card_jogador(0)
-		self.add_card_jogador(1)
-		self.add_card_jogador(2)
-		self.add_card_jogador(3)
+		self.cartas_dealer = []
+		self.cartas = []
 		
+		self.add_card_dealer('back')
+		self.add_card_jogador(0, '1P')
+		self.add_card_jogador(1, '1E')
+		self.add_card_jogador(2, '1O')
+		self.add_card_jogador(3, '1C')
+
 		# Botões das opções dos players
 		self.player_hit_button = Button(self.mainWindow, bg="gray", text='Hit', font="Arial 14 bold", command=self.hit)
 		self.player_hit_button.place(relx=0.35, rely=0.35, anchor=CENTER, width=140)
@@ -45,13 +46,12 @@ class PlayerInterface(PyNetgamesServerListener):
 		self.player_double_button.place(relx=0.55, rely=0.35, anchor=CENTER, width=140)
 		self.player_surrender_button = Button(self.mainWindow, bg="gray", text='Surrender', font="Arial 14 bold", command=self.surrender)
 		self.player_surrender_button.place(relx=0.65, rely=0.35, anchor=CENTER, width=140)
-		#FIM Botões das opções dos players
 
 		self.add_player_label('Jogador 01', 100, 10, 0)
 		self.add_player_label('Jogador 02', 100, 10, 1)
 		self.add_player_label('Jogador 03', 100, 10, 2)
 		self.add_player_label('Jogador 04', 100, 10, 3)
-		
+
 		# self.disable_buttons()
 		# self.enable_buttons()
 
@@ -80,27 +80,30 @@ class PlayerInterface(PyNetgamesServerListener):
 		aposta_label = Label(self.mainWindow, bg="gray", text='Aposta: ' + str(aposta), font="Arial 12")
 		aposta_label.place(relx=(numero_jogador+1) * 0.2, rely=0.66, anchor=CENTER)
 
-	def add_card_jogador(self, numero_jogador):
-		carta = Label(self.frames_jogadores[numero_jogador], bd=0.1, relief="solid", image=self.heart_1)
+	def add_card_jogador(self, numero_jogador, carta):
+		self.cartas.append(PhotoImage(file=os.path.join(os.path.dirname(__file__), "images/cards/" + carta + ".png")))
+		carta = Label(self.frames_jogadores[numero_jogador], bd=0.1, relief="solid", image=self.cartas[len(self.cartas)-1])
 		carta.grid(row=0, column=len(self.grid_jogadores)+1)
 		self.grid_jogadores.append(carta)
 
-	def add_card_dealer(self):
-		carta = Label(self.frame_cartas_dealer, bd=0.1, relief="solid", image=self.heart_1)
+	def add_card_dealer(self, carta):
+		self.cartas_dealer.append(PhotoImage(file=os.path.join(os.path.dirname(__file__), "images/cards/" + carta + ".png")))
+		carta = Label(self.frame_cartas_dealer, bd=0.1, relief="solid", image=self.cartas_dealer[len(self.cartas_dealer)-1])
 		carta.grid(row=0, column=len(self.grid_dealer)+1)
 		self.grid_dealer.append(carta)
+		
 
 	def hit(self):
-		self.add_card_dealer()
+		self.add_card_jogador(0, '1C')
 
 	def stand(self):
-		self.add_card_jogador(1)
+		self.add_card_jogador(1, '1C')
 
 	def double(self):
-		self.add_card_jogador(2)
+		self.add_card_jogador(2, '1C')
 
 	def surrender(self):
-		self.add_card_jogador(3)
+		self.add_card_jogador(3, '1C')
 
 	#----------------------- Pynetgames ----------------------------------
 
@@ -132,22 +135,3 @@ class PlayerInterface(PyNetgamesServerListener):
 
 	def receive_move(self, move):
 		pass
-
-
-class DynamicGrid(Frame):
-	def __init__(self, parent, *args, **kwargs):
-		Frame.__init__(self, parent, *args, **kwargs)
-		self.text = Text(self, wrap="char", borderwidth=0, highlightthickness=0,
-						    state="disabled")
-		self.text.pack(fill="both", expand=True)
-		self.boxes = []
-
-	def add_box(self):
-		bg = "red"
-		box = Frame(self.text, bd=1, relief="sunken", background=bg,
-				       width=100, height=100)
-		self.boxes.append(box)
-		self.text.configure(state="normal")
-		self.text.window_create("end", window=box)
-		self.text.configure(state="disabled")
-
