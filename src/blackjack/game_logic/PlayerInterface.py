@@ -62,11 +62,14 @@ class PlayerInterface(PyNetgamesServerListener):
 
 		menubar = Menu(self.mainWindow) 
 		file = Menu(menubar, tearoff = 0) 
-		menubar.add_cascade(label ='Jogo', menu = file) 
-		file.add_command(label ='Iniciar Jogo', command=lambda: self.send_match())
-		
-		self.mainWindow.config(menu = menubar) 
+		menu_jogadores = Menu(self.mainWindow, tearoff=0)
+		menu_jogadores.add_command(label="2 Jogadores", command=lambda: self.send_match(2))
+		menu_jogadores.add_command(label="3 Jogadores", command=lambda: self.send_match(3))
+		menu_jogadores.add_command(label="4 Jogadores", command=lambda: self.send_match(4))
+		menubar.add_cascade(label ='Menu', menu = file) 
+		file.add_cascade(label ='Novo Jogo', menu = menu_jogadores) 
 
+		self.mainWindow.config(menu = menubar) 
 		self.mainWindow.mainloop()
 
 	def dialog_string(self, msg):
@@ -130,8 +133,8 @@ class PlayerInterface(PyNetgamesServerListener):
 	def send_connect(self):
 		self.server_proxy.send_connect("wss://py-netgames-server.fly.dev")
 
-	def send_match(self):
-		self.server_proxy.send_match(2)
+	def send_match(self, numero_jogadores):
+		self.server_proxy.send_match(numero_jogadores)
 
 	def receive_connection_success(self):
 		print('--------------\nCONETADO')
