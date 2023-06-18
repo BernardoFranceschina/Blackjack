@@ -1,2 +1,8 @@
+from Mao import *
+
 class Dealer():
-    pass
+    def __init__(self, mao):
+        self._mao = Mao(mao)
+
+    def verificarMao(self):
+        return self._mao.getValor()

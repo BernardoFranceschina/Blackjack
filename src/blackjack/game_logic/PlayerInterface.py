@@ -1,5 +1,6 @@
 import os
 from tkinter import *
+from tkinter import simpledialog
 
 from py_netgames_client.tkinter_client.PyNetgamesServerProxy import PyNetgamesServerProxy
 from py_netgames_client.tkinter_client.PyNetgamesServerListener import PyNetgamesServerListener
@@ -15,8 +16,9 @@ class PlayerInterface(PyNetgamesServerListener):
 
 		# Cria as instancias dos frames
 		self.frames_jogadores = [Frame(self.mainWindow, width=349, height=200) for i in range(4)]
-		self.frame_cartas_dealer = Frame(self.mainWindow, width=1400, height=800)
+		self.frame_cartas_dealer = Frame(self.mainWindow, width=400, height=800)
 
+		self.player_name = self.dialog_string("Insira seu nome")
 		# Label para nome do dealer
 		self.dealer_label = Label(self.mainWindow, bg="gray", text='Dealer', font="Arial 17 bold")
 		self.dealer_label.place(relx=0.5, rely=0.05, anchor=CENTER)
@@ -58,7 +60,22 @@ class PlayerInterface(PyNetgamesServerListener):
 		self.add_listener()
 		self.send_connect()
 
+		menubar = Menu(self.mainWindow) 
+		file = Menu(menubar, tearoff = 0) 
+		menubar.add_cascade(label ='Jogo', menu = file) 
+		file.add_command(label ='Iniciar Jogo', command=lambda: self.send_match())
+		
+		self.mainWindow.config(menu = menubar) 
+
 		self.mainWindow.mainloop()
+
+	def dialog_string(self, msg):
+		answer = simpledialog.askstring(" ", msg, parent=self.mainWindow)
+		return answer
+
+	def dialog_int(self, msg):
+		answer = simpledialog.askinteger("", msg, parent=self.mainWindow)
+		return answer
 
 	def disable_buttons(self):
 		self.player_hit_button.configure(state='disable')
@@ -91,7 +108,6 @@ class PlayerInterface(PyNetgamesServerListener):
 		carta = Label(self.frame_cartas_dealer, bd=0.1, relief="solid", image=self.cartas_dealer[len(self.cartas_dealer)-1])
 		carta.grid(row=0, column=len(self.grid_dealer)+1)
 		self.grid_dealer.append(carta)
-		
 
 	def hit(self):
 		self.add_card_jogador(0, '1C')
@@ -118,20 +134,20 @@ class PlayerInterface(PyNetgamesServerListener):
 		self.server_proxy.send_match(2)
 
 	def receive_connection_success(self):
-		print('--------------\nCONETADO ')
-		self.send_match()
+		print('--------------\nCONETADO')
 
 	def receive_disconnect(self):
-		pass
+		print('receive_disconnect', self)
 		
 	def receive_error(self, error):
-		pass
+		print('receive_error', error)
 
 	def receive_match(self, match):
 		print('--------------\nPARTIDA INICIADA')
 		print('--------------\nORDEM: ', match.position)
 		print('--------------\nmatch_id: ', match.match_id)
 		print('--------------')
+		self.dialog_int("Aposta")
 
 	def receive_move(self, move):
-		pass
+		print('receive_move', move)
