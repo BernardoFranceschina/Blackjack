@@ -1,7 +1,7 @@
-from Mao import *
-from Baralho import *
+from .Mao import *
+from .Baralho import *
 class Jogador():
-    def __init__(self, nome, position, mao = []):
+    def __init__(self, nome=None, position=-1, mao = []):
         self._nome = nome
         self._mao = Mao(mao)
         self._position = position
@@ -35,9 +35,18 @@ class Jogador():
     def setJogando_rodada(self):
         pass
 
-    def adicionarCarta(self, carta):
+    def adicionarCarta(self, carta: Carta):
         self._mao.adicionaCarta(carta)
         return self._mao
+
+    def adicionarValor(self, valor):
+        self._fichas += valor
+
+    def retirar_fichas(self, fichas):
+        self._fichas -= fichas
+
+    def qnt_fichas(self):
+        return self._fichas
 
 # baralho = Baralho()
 # baralho.criar_baralho()

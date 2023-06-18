@@ -1,9 +1,13 @@
+import json
 import os
 from tkinter import *
 from tkinter import simpledialog
 
 from py_netgames_client.tkinter_client.PyNetgamesServerProxy import PyNetgamesServerProxy
 from py_netgames_client.tkinter_client.PyNetgamesServerListener import PyNetgamesServerListener
+
+from .classes.Jogador import *
+from .classes.Jogo import *
 
 class PlayerInterface(PyNetgamesServerListener):
 	def __init__(self):
@@ -18,7 +22,9 @@ class PlayerInterface(PyNetgamesServerListener):
 		self.frames_jogadores = [Frame(self.mainWindow, width=349, height=200) for i in range(4)]
 		self.frame_cartas_dealer = Frame(self.mainWindow, width=400, height=800)
 
-		self.player_name = self.dialog_string("Insira seu nome")
+		# self.player_name = self.dialog_string("Insira seu nome")
+		self.player_name = 'pedro'
+
 		# Label para nome do dealer
 		self.dealer_label = Label(self.mainWindow, bg="gray", text='Dealer', font="Arial 17 bold")
 		self.dealer_label.place(relx=0.5, rely=0.05, anchor=CENTER)
@@ -60,16 +66,16 @@ class PlayerInterface(PyNetgamesServerListener):
 		self.add_listener()
 		self.send_connect()
 
-		menubar = Menu(self.mainWindow) 
-		file = Menu(menubar, tearoff = 0) 
-		menu_jogadores = Menu(self.mainWindow, tearoff=0)
-		menu_jogadores.add_command(label="2 Jogadores", command=lambda: self.send_match(2))
-		menu_jogadores.add_command(label="3 Jogadores", command=lambda: self.send_match(3))
-		menu_jogadores.add_command(label="4 Jogadores", command=lambda: self.send_match(4))
-		menubar.add_cascade(label ='Menu', menu = file) 
-		file.add_cascade(label ='Novo Jogo', menu = menu_jogadores) 
-
-		self.mainWindow.config(menu = menubar) 
+		# menubar = Menu(self.mainWindow) 
+		# file = Menu(menubar, tearoff = 0) 
+		# menu_jogadores = Menu(self.mainWindow, tearoff=0)
+		# menu_jogadores.add_command(label="2 Jogadores", command=lambda: self.send_match(2))
+		# menu_jogadores.add_command(label="3 Jogadores", command=lambda: self.send_match(3))
+		# menu_jogadores.add_command(label="4 Jogadores", command=lambda: self.send_match(4))
+		# menubar.add_cascade(label ='Menu', menu = file) 
+		# file.add_cascade(label ='Novo Jogo', menu = menu_jogadores) 
+		# self.mainWindow.config(menu = menubar) 
+		self.baralho : Baralho
 		self.mainWindow.mainloop()
 
 	def dialog_string(self, msg):
@@ -133,14 +139,15 @@ class PlayerInterface(PyNetgamesServerListener):
 	def send_connect(self):
 		self.server_proxy.send_connect("wss://py-netgames-server.fly.dev")
 
-	def send_match(self, numero_jogadores):
-		self.server_proxy.send_match(numero_jogadores)
+	def send_match(self):
+		self.server_proxy.send_match(2)
 
 	def receive_connection_success(self):
 		print('--------------\nCONETADO')
+		self.send_match()
 
 	def receive_disconnect(self):
-		print('receive_disconnect', self)
+		print('receive_disconnect')
 		
 	def receive_error(self, error):
 		print('receive_error', error)
@@ -150,7 +157,51 @@ class PlayerInterface(PyNetgamesServerListener):
 		print('--------------\nORDEM: ', match.position)
 		print('--------------\nmatch_id: ', match.match_id)
 		print('--------------')
-		self.dialog_int("Aposta")
+
+		self.match_id = match.match_id
+		self.jogo = Jogo()
+		jogadores = [Jogador(self.player_name, match.position), Jogador(), Jogador()]
+		self.jogo.setJogadores(jogadores)
+		self.baralho = Baralho()
+		if match.position == 0:
+			baralho = Baralho()
+			baralho.criar_baralho()
+			baralho = baralho.embaralhar()
+			
+			move_baralho = []
+			for i in baralho:
+				move_baralho.append(json.dumps(i.__dict__))
+
+			naipes = [json.loads(i)['_naipe'] for i in move_baralho]
+			numeros = [json.loads(i)['_numero'] for i in move_baralho]
+			self.baralho.criar_baralho(False, numeros, naipes)
+
+			self.send_move({
+				'jogada': 'instancia_baralho',
+				'baralho': move_baralho
+			})
+
+		# send_move({
+		# 	jogador_nome: '',
+		# 	jogador_position: 0
+		# })
+
+	def send_move(self, payload):
+		self.server_proxy.send_move(self.match_id, payload)
 
 	def receive_move(self, move):
-		print('receive_move', move)
+		if move.payload['jogada'] == "instancia_baralho":
+			naipes = [json.loads(i)['_naipe'] for i in move.payload['baralho']]
+			numeros = [json.loads(i)['_numero'] for i in move.payload['baralho']]
+			self.baralho.criar_baralho(False, numeros, naipes)
+
+		if move.payload['jogada'] == "aposta":
+			valor_aposta = self.dialog_int("Digite o valor da aposta")
+			notificacao = self.jogo.avaliar_aposta(valor_aposta)
+			botao = Button(self.mainWindow, text=notificacao, command=lambda: botao.pack_forget()) #fica na tela ate ser clicado
+			if notificacao == "Aposta feita com sucesso":
+				pass
+				#envia jogada para jogador remoto
+				#vai para a proximo passo do jogo
+			else:
+				self.receive_move(move)
