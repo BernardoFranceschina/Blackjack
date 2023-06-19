@@ -1,9 +1,9 @@
 from .Mao import *
 from .Baralho import *
 class Jogador():
-    def __init__(self, nome=None, position=-1, mao = []):
+    def __init__(self, nome, position):
+        self._mao = Mao()
         self._nome = nome
-        self._mao = Mao(mao)
         self._position = position
         self._fichas = 100
         self._apostaAtual = 0
@@ -11,51 +11,71 @@ class Jogador():
         self._primeira_jogada = False
         self._jogando_rodada = False
 
-    def turno(self):
+    def getMao(self):
+        return self._mao.getCartas()
+
+    def getNome(self):
+        return self._nome
+
+    def getPosition(self):
+        return self._position
+
+    def getAposta(self):
+        return self._apostaAtual
+
+    def getFichas(self):
+        return self._fichas
+
+    def setAposta(self, aposta):
+        self._apostaAtual = aposta
+
+    def avaliarAposta(self, fichas):
+        if self._fichas - fichas >= 0:
+            return True
+        return False
+
+    def dobrarAposta(self):
+        self._apostaAtual *= 2
+
+    def adicionar_fichas(self, valor):
+        self._fichas += valor
+
+    def retirar_fichas(self, fichas):
+        self._fichas -= fichas
+
+    def devolver_metade_aposta(self):
+        self.adicionar_fichas(self._apostaAtual / 2)
+        self._apostaAtual = 0
+        
+    def setTurno(self, bool = True):
+        self._primeira_jogada = bool
+        self._vezDeJogar = bool
+
+    def getTurno(self):
         return self._vezDeJogar
     
     def ganhou(self):
         self._fichas += self._apostaAtual * 2
     
     def empatou(self):
-        self._fichas += self._apostaAtual 
+        self._fichas += self._apostaAtual
+
+    def perdeu(self):
+        self._fichas -= self._apostaAtual
+        self._jogando_rodada = False
 
     def verificarMao(self):
         return self._mao.getValor()
 
-    def passar_vez(self):
-        self._vezDeJogar = False
-
     def primeira_jogada(self):
         return self._primeira_jogada
     
-    def getValor(self):
-        return self._fichas
-    
-    def setJogando_rodada(self):
-        pass
+    def getJogando_rodada(self):
+        return self._jogando_rodada
+        #Informa se o jogador está jogando a rodada, ou seja, se não efetuou surrender durante a partida
+
+    def setJogando_rodada(self, bool):
+        self._jogando_rodada = bool
 
     def adicionarCarta(self, carta: Carta):
         self._mao.adicionaCarta(carta)
-        return self._mao
-
-    def adicionarValor(self, valor):
-        self._fichas += valor
-
-    def retirar_fichas(self, fichas):
-        self._fichas -= fichas
-
-    def qnt_fichas(self):
-        return self._fichas
-
-# baralho = Baralho()
-# baralho.criar_baralho()
-# baralho = baralho.embaralhar()
-
-# jogador = Jogador('B', 1)
-
-# add1 = baralho[:2]
-# for i in add1:
-#     jogador.adicionarCarta(i)
-# print(jogador.verificarMao())
-

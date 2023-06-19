@@ -17,7 +17,7 @@ class Carta:
         if self._numero == 'K':
             return '10'
         if self._numero == 'A': # Fazer verificação de valor do A
-            return '1'
+            return 'A'
         return self._numero
 
     def getCarta(self):
