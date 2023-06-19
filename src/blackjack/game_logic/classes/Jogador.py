@@ -9,7 +9,6 @@ class Jogador():
         self._apostaAtual = 0
         self._vezDeJogar = False
         self._primeira_jogada = False
-        self._jogando_rodada = False
 
     def getMao(self):
         return self._mao.getCartas()
@@ -30,21 +29,21 @@ class Jogador():
         self._apostaAtual = aposta
 
     def avaliarAposta(self, fichas):
-        if self._fichas - fichas >= 0:
+        if (int(self._fichas) - int(fichas)) >= 0:
             return True
         return False
 
     def dobrarAposta(self):
-        self._apostaAtual *= 2
+        self._apostaAtual = int(self._apostaAtual) * 2
 
     def adicionar_fichas(self, valor):
-        self._fichas += valor
+        self._fichas += int(valor)
 
     def retirar_fichas(self, fichas):
-        self._fichas -= fichas
+        self._fichas -= int(fichas)
 
     def devolver_metade_aposta(self):
-        self.adicionar_fichas(self._apostaAtual / 2)
+        self.adicionar_fichas(int(self._apostaAtual) / 2)
         self._apostaAtual = 0
         
     def setTurno(self, bool = True):
@@ -55,10 +54,10 @@ class Jogador():
         return self._vezDeJogar
     
     def ganhou(self):
-        self._fichas += self._apostaAtual * 2
+        self._fichas += int(self._apostaAtual) * 2
     
     def empatou(self):
-        self._fichas += self._apostaAtual
+        self._fichas += int(self._apostaAtual)
 
     def perdeu(self):
         self._fichas -= self._apostaAtual
@@ -74,8 +73,6 @@ class Jogador():
         return self._jogando_rodada
         #Informa se o jogador está jogando a rodada, ou seja, se não efetuou surrender durante a partida
 
-    def setJogando_rodada(self, bool):
-        self._jogando_rodada = bool
 
     def adicionarCarta(self, carta: Carta):
         self._mao.adicionaCarta(carta)

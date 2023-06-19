@@ -11,7 +11,7 @@ class Jogo():
         self._etapa_jogadas = False
         self._etapa_aposta = False
         self._rodada = 0
-        self._jogador_jogando: 0
+        self._jogador_jogando = 0
         self._etapa_jogadaDealer = False
 
     def getCartasDealer(self):
@@ -31,66 +31,72 @@ class Jogo():
             if jogador.getPosition() == position:
                 return jogador
 
+    def setJogadorJogando(self, jogador_jogando = -1):
+        if jogador_jogando >= 0:
+            self._jogador_jogando = jogador_jogando
+        else:
+            self._jogador_jogando = (self._jogador_jogando+1)%3
+
+    def getJogadorJogando(self):
+        return self._jogador_jogando
+
     def hit(self, position):
         jogador = self.getJogadorByPosition(position)
-        if jogador.getTurno():
-            self.receber_carta_jogador(jogador)
+        self.receber_carta_jogador(jogador)
 
-            valorD_mao = jogador.verificarMao()
-            if valorD_mao < 21:
-                resultado = ""
-            else:
-                if valorD_mao == 21:
-                    resultado = self.notifica_BlackJack()
-                elif valorD_mao > 21:
-                    resultado = self.notifica_derrota()
-                if position == len(self._jogadores) - 1:
-                    #self.jogadaDealer()
-                    self._etapa_jogadaDealer = True
-                jogador.setTurno(False)
+        valorD_mao = jogador.verificarMao()
+        if valorD_mao < 21:
+            resultado = ""
+        else:
+            if valorD_mao == 21:
+                resultado = self.notifica_BlackJack()
+            elif valorD_mao > 21:
+                resultado = self.notifica_derrota()
+            if position == len(self._jogadores) - 1:
+                self._etapa_jogadaDealer = True
+            jogador.setTurno(False)
+            self.setJogadorJogando()
             return resultado
+        
 
     def double(self, position):
         jogador = self.getJogadorByPosition(position)
-        if jogador.getTurno():
-            fichas = jogador.getAposta()
-            fichas_suficientes = jogador.avaliarAposta(fichas)
-            if fichas_suficientes:
-                jogador.dobrarAposta()
-                jogador.retirar_fichas(fichas)
-                self.receber_carta_jogador(jogador)
-                valorDM = jogador.verificarMao()
-                if valorDM > 21:
-                    notificacao = self.notifica_derrota()
-                elif valorDM == 21:
-                    notificacao = self.notifica_BlackJack()
-                if position == len(self._jogadores) - 1:
-                    #self.jogadaDealer()
-                    self._etapa_jogadaDealer = True
-                jogador.setTurno(False)
-            return notificacao
-        else:
-            notificacao = ''
-            return notificacao
-
-    def stand(self, position):
-        jogador = self.getJogadorByPosition(position)
-        if jogador.getTurno():
-            if position == len(self._jogadores):
-                #self.jogadaDealer()
-                self._etapa_jogadaDealer = True
-
-    def surrender(self, position):
-        jogador = self.getJogadorByPosition(position)
-        if jogador.getTurno():
-            jogador.devolver_metade_aposta()
-            jogador.setJogando_rodada(False)
+        fichas = jogador.getAposta()
+        fichas_suficientes = jogador.avaliarAposta(fichas)
+        notificacao = ''
+        if fichas_suficientes:
+            jogador.dobrarAposta()
+            jogador.retirar_fichas(fichas)
+            self.receber_carta_jogador(jogador)
+            valorDM = jogador.verificarMao()
+            if valorDM > 21:
+                notificacao = self.notifica_derrota()
+            elif valorDM == 21:
+                notificacao = self.notifica_BlackJack()
             if position == len(self._jogadores) - 1:
                 #self.jogadaDealer()
                 self._etapa_jogadaDealer = True
-                notificacao = self.notificar_desistencia
-                jogador.setTurno(False)
-            return notificacao
+            jogador.setTurno(False)
+            self.setJogadorJogando()
+        return notificacao
+
+    def stand(self, position):
+        jogador = self.getJogadorByPosition(position)
+        jogador.setTurno(False)
+        if position == len(self._jogadores) - 1:
+            #self.jogadaDealer()
+            self._etapa_jogadaDealer = True
+        self.setJogadorJogando()
+
+    def surrender(self, position):
+        jogador = self.getJogadorByPosition(position)
+        jogador.setTurno(False)
+        jogador.devolver_metade_aposta()
+        if position == len(self._jogadores) - 1:
+            #self.jogadaDealer()
+            self._etapa_jogadaDealer = True
+        self.setJogadorJogando()
+        return self.notificar_desistencia()
 
     def notifica_BlackJack(self):
         return "Blackjack"
@@ -98,7 +104,7 @@ class Jogo():
     def notifica_derrota(self):
         return "Derrota"
 
-    def notificar_desistencia():
+    def notificar_desistencia(self):
         return "Desistencia"
 
     def quantidade_de_jogadores(self):
@@ -108,12 +114,18 @@ class Jogo():
         self.distribuir_cartas()
         self._etapa_aposta = True
 
+    def getTurnoAposta(self):
+        return self._etapa_aposta
+
+    def getTurnoJogador(self):
+        return self._etapa_jogadas
+
     def verificar_turno(self, jogador):
         return (jogador == self._jogador_jogando)
 
-    def avaliar_aposta(self, fichas, position): #fichas, jogador(fichas = jogador.fichas? entao apenas jogador?)
+    def avaliar_aposta(self, fichas, position):
         jogador = self.getJogadorByPosition(position)
-        if int(fichas) <= int(jogador.getFichas()):
+        if jogador.avaliarAposta(fichas):
             if position == len(self._jogadores) - 1:
                 self.fimTurnoAposta()
             return "Aposta feita com sucesso"
