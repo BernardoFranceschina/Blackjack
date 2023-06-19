@@ -18,21 +18,14 @@ class PlayerInterface(PyNetgamesServerListener):
 		self.mainWindow.resizable(False, False)
 		self.mainWindow["bg"]="green"
 
-		# Cria as instancias dos frames
-		self.frames_jogadores = [Frame(self.mainWindow, bg='green',  width=349, height=200) for i in range(3)]
-		self.frame_cartas_dealer = Frame(self.mainWindow, bg='green', width=400, height=300)
-
 		# self.player_name = self.dialog_string("Insira seu nome")
 		self.player_name = 'sejfqf'
+
+		self.set_player_frames()
 
 		# Label para nome do dealer
 		self.dealer_label = Label(self.mainWindow, bg="gray", text='Dealer', font="Arial 17 bold")
 		self.dealer_label.place(relx=0.5, rely=0.05, anchor=CENTER)
-
-		# Posiciona os frames em que ficarão as cartas, tanto dos jogadores quando do dealer
-		for index, frame_jogador in enumerate(self.frames_jogadores):
-			frame_jogador.place(relx=(index+1)*0.25, rely=0.75, anchor=CENTER)
-		self.frame_cartas_dealer.place(relx=0.5, rely=0.15, anchor=CENTER)
 
 		self.grid_dealer = []
 		self.grid_jogadores = []
@@ -138,7 +131,17 @@ class PlayerInterface(PyNetgamesServerListener):
 		self.fichas_label[numero_jogador].config(text='Fichas: ' + str(fichas))
 		self.aposta_label[numero_jogador].config(text='Aposta: ' + str(aposta))
 
+	def set_dealer_frames(self):
+		self.frame_cartas_dealer = Frame(self.mainWindow, bg='green', width=400, height=300)
+		self.frame_cartas_dealer.place(relx=0.5, rely=0.15, anchor=CENTER)
+
+	def set_player_frames(self):
+		self.frames_jogadores = [Frame(self.mainWindow, bg='green',  width=349, height=200) for i in range(3)]
+		for index, frame_jogador in enumerate(self.frames_jogadores):
+			frame_jogador.place(relx=(index+1)*0.25, rely=0.75, anchor=CENTER)
+
 	def update_player_hand(self):
+		self.set_player_frames()
 		self.cartas = []
 		self.grid_jogadores = []
 		for index, jogador in enumerate(self.jogo.getJogadores()):
@@ -146,6 +149,7 @@ class PlayerInterface(PyNetgamesServerListener):
 				self.add_card_jogador(index, carta)
 
 	def update_dealer_hand(self):
+		self.set_dealer_frames()
 		self.cartas_dealer = []
 		self.grid_dealer = []
 		for carta in self.jogo.getCartasDealer():
@@ -166,6 +170,7 @@ class PlayerInterface(PyNetgamesServerListener):
 	def hit(self):
 		notificacao = self.jogo.hit(self.jogador.getPosition())
 		self.notificacao(notificacao)
+
 		if self.jogador.getPosition() == self.jogo.getJogadorJogando():
 			self.enable_buttons()
 		else:
@@ -177,26 +182,31 @@ class PlayerInterface(PyNetgamesServerListener):
 			'jogador': self.jogador.getPosition(),
 			'passar_vez': player.getTurno()
 		})
+		self.update_player_hand()
 
 	def stand(self):
 		notificacao = self.jogo.stand(self.jogador.getPosition())
 		self.notificacao(notificacao)
+
 		self.disable_buttons()
 		self.send_move({
 			'jogada': 'stand',
 			'jogador': self.jogador.getPosition(),
 			'passar_vez': True
 		})
+		self.update_player_hand()
 
 	def double(self):
 		notificacao = self.jogo.double(self.jogador.getPosition())
 		self.notificacao(notificacao)
+
 		self.disable_buttons()
 		self.send_move({
 			'jogada': 'double',
 			'jogador': self.jogador.getPosition(),
 			'passar_vez': True
 		})
+		self.update_player_hand()
 
 	def surrender(self):
 		notificacao = self.jogo.surrender(self.jogador.getPosition())
@@ -207,7 +217,7 @@ class PlayerInterface(PyNetgamesServerListener):
 			'jogador': self.jogador.getPosition(),
 			'passar_vez': True
 		})
-
+		self.update_player_hand()
 
 	def openAposta(self):
 		self.input_aposta.deiconify()
