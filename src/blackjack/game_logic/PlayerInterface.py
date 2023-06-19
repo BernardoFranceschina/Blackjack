@@ -19,8 +19,8 @@ class PlayerInterface(PyNetgamesServerListener):
 		self.mainWindow.geometry("1400x800")
 		self.mainWindow.resizable(False, False)
 		self.mainWindow["bg"]="green"
-		# self.player_name = self.dialog_string("Insira seu nome")
-		self.player_name = 'sejfqf'
+
+		self.player_name = self.dialog_string("Insira seu nome")
 
 		self.set_player_frames()
 
