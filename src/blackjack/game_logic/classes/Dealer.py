@@ -4,6 +4,9 @@ class Dealer():
     def __init__(self):
         self._mao = Mao()
 
+    def resetCartas(self):
+        self._mao.resetCartas()
+
     def verificarMao(self):
         return self._mao.getValor()
     

@@ -13,6 +13,9 @@ class Jogador():
     def getMao(self):
         return self._mao.getCartas()
 
+    def resetCartas(self):
+        self._mao.resetCartas()
+
     def getNome(self):
         return self._nome
 
@@ -26,7 +29,8 @@ class Jogador():
         return self._fichas
 
     def setAposta(self, aposta):
-        self._apostaAtual = aposta
+        self._apostaAtual = int(aposta)
+        self._fichas -= int(aposta)
 
     def avaliarAposta(self, fichas):
         if (int(self._fichas) - int(fichas)) >= 0:
@@ -53,15 +57,13 @@ class Jogador():
     def getTurno(self):
         return self._vezDeJogar
     
-    def ganhou(self):
-        self._fichas += int(self._apostaAtual) * 2
+    def vitoria(self):
+        self.adicionar_fichas(int(self._apostaAtual) * 2)
+        self._apostaAtual = 0
     
-    def empatou(self):
-        self._fichas += int(self._apostaAtual)
-
-    def perdeu(self):
-        self._fichas -= self._apostaAtual
-        self._jogando_rodada = False
+    def empate(self):
+        self.adicionar_fichas(int(self._apostaAtual))
+        self._apostaAtual = 0
 
     def verificarMao(self):
         return self._mao.getValor()

@@ -5,6 +5,9 @@ class Mao():
     def getCartas(self):
         return [carta.getCarta() for carta in self._cartas]
 
+    def resetCartas(self):
+        self._cartas = []
+
     def adicionaCarta(self, carta):
         self._cartas.append(carta)
 

@@ -8,11 +8,20 @@ class Jogo():
         self._baralho = Baralho()
         self._dealer = Dealer()
         self._jogadores = []
-        self._etapa_jogadas = False
-        self._etapa_aposta = False
         self._rodada = 0
         self._jogador_jogando = 0
+        self._etapa_jogadas = False
+        self._etapa_aposta = False
         self._etapa_jogadaDealer = False
+
+    def resetRodada(self):
+        self._etapa_jogadas = False
+        self._etapa_aposta = False
+        self._etapa_jogadaDealer = False
+        self.setJogadorJogando(0)
+        self._dealer.resetCartas()
+        for jogadores in self._jogadores:
+            jogadores.resetCartas()
 
     def getCartasDealer(self):
         return self._dealer.getMao()
@@ -40,20 +49,26 @@ class Jogo():
     def getJogadorJogando(self):
         return self._jogador_jogando
 
+    def getJogadaDealer(self):
+        return self._etapa_jogadaDealer
+
+    def setJogadaDealer(self, jogada_dealer):
+        self._etapa_jogadaDealer = jogada_dealer
+
     def hit(self, position):
         jogador = self.getJogadorByPosition(position)
         self.receber_carta_jogador(jogador)
 
         valorD_mao = jogador.verificarMao()
         if valorD_mao < 21:
-            resultado = ""
+            resultado = " "
         else:
             if valorD_mao == 21:
                 resultado = self.notifica_BlackJack()
             elif valorD_mao > 21:
                 resultado = self.notifica_derrota()
             if position == len(self._jogadores) - 1:
-                self._etapa_jogadaDealer = True
+                self.setJogadaDealer(True)
             jogador.setTurno(False)
             self.setJogadorJogando()
             return resultado
@@ -74,8 +89,7 @@ class Jogo():
             elif valorDM == 21:
                 notificacao = self.notifica_BlackJack()
             if position == len(self._jogadores) - 1:
-                #self.jogadaDealer()
-                self._etapa_jogadaDealer = True
+                self.setJogadaDealer(True)
             jogador.setTurno(False)
             self.setJogadorJogando()
         return notificacao
@@ -84,8 +98,7 @@ class Jogo():
         jogador = self.getJogadorByPosition(position)
         jogador.setTurno(False)
         if position == len(self._jogadores) - 1:
-            #self.jogadaDealer()
-            self._etapa_jogadaDealer = True
+            self.setJogadaDealer(True)
         self.setJogadorJogando()
 
     def surrender(self, position):
@@ -93,8 +106,7 @@ class Jogo():
         jogador.setTurno(False)
         jogador.devolver_metade_aposta()
         if position == len(self._jogadores) - 1:
-            #self.jogadaDealer()
-            self._etapa_jogadaDealer = True
+            self.setJogadaDealer(True)
         self.setJogadorJogando()
         return self.notificar_desistencia()
 
@@ -161,20 +173,30 @@ class Jogo():
         notificacao = self.surrender(position)
         return f"Jogador {position} - {jogador.getNome()} se rendeu. Metade das fichas foram devolvidas: SURRENDER\n{notificacao}"
 
-    def receive_ganhou(self, position):
+    def receive_vitoria(self, position):
         jogador = self.getJogadorByPosition(position)
-        jogador.ganhou()
-        return f"Jogador {position} - {jogador.getNome()} ganhou do dealer"
+        jogador.vitoria()
+        return f"Você ganhou! :)"
+        return f"Jogador {position} - {jogador.getNome()} ganhou do dealer/voce"
 
-    def receive_empatou(self, position):
+    def receive_empate(self, position):
         jogador = self.getJogadorByPosition(position)
-        jogador.empatou()
-        return f"Jogador {position} - {jogador.getNome()} empatou contra o dealer"
+        jogador.empate()
+        return f"Você empatou!"
+        return f"Jogador {position} - {jogador.getNome()} empatou contra o dealer/voce"
 
-    def receive_perdeu(self, position):
+    def receive_derrota(self, position):
         jogador = self.getJogadorByPosition(position)
-        jogador.perdeu()
-        return f"Jogador {position} - {jogador.getNome()} perdeu do dealer"
+        return f"Você perdeu! :("
+        return f"Jogador {position} - {jogador.getNome()} perdeu/voce"
+
+    def notificacao_derrota(self, position):
+        jogador = self.getJogadorByPosition(position)
+        return f"Jogador {position} - {jogador.getNome()} perdeu"
+
+    def notificacao_blackjack(self, position):
+        jogador = self.getJogadorByPosition(position)
+        return f"Jogador {position} - {jogador.getNome()} fez um BlackJack"
 
     def receber_carta_jogador(self, jogador):
         carta = self._baralho.retirar_carta()
@@ -193,29 +215,26 @@ class Jogo():
     def jogadaDealer(self):
         jogadas = []
         valorD = self._dealer.verificarMao()
-        while valorD > 17:
+        while valorD < 17:
             self.receber_carta_dealer()
             valorD = self._dealer.verificarMao()
 
         #comparar mao do dealer com a de todos
-        for j in range(len(self._jogadores)- 1):
+        for j in range(len(self._jogadores)):
             jogador = self.getJogadorByPosition(j)
             valorJ = jogador.verificarMao()
 
-            if valorD > valorJ:
-                jogada = {'jogada': 'perdeu',
-				        'jogador': jogador.getPosition()}
-                jogadas.append(jogada)
-
-            elif valorD == valorJ:
-                jogada = {'jogada': 'empate',
-				        'jogador': jogador.getPosition()}
-                jogadas.append(jogada)
-
+            if (valorJ > valorD and valorJ <= 21) or (valorD > 21 and valorJ <= 21):
+                resultado = 'vitoria'
+            elif valorJ == valorD and valorJ <= 21:
+                resultado = 'empate'
             else:
-                jogada = {'jogada': 'vitoria',
-				        'jogador': jogador.getPosition()}
-                jogadas.append(jogada)
-        self._etapa_jogadaDealer = False
-        return jogadas
+                resultado = 'derrota'
 
+            jogadas.append({
+                'jogada': resultado,
+                'jogador': jogador.getPosition()
+            })
+
+        self.setJogadaDealer(False)
+        return jogadas
