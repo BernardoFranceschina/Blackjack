@@ -488,7 +488,6 @@ class PlayerInterface(PyNetgamesServerListener):
 			for jogador in self.jogo.getJogadores():
 				resultado += f'{jogador.getNome()} - {jogador.getFichas()}\n'
 			messagebox.showinfo("Fim do jogo", resultado)
-			return
 
 		self.proxima_rodada()
 		self.send_move({
