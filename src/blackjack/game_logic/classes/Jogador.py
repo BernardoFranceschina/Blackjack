@@ -7,8 +7,13 @@ class Jogador():
         self._position = position
         self._fichas = 100
         self._apostaAtual = 0
-        self._vezDeJogar = False
-        self._primeira_jogada = False
+        self._desistiu_rodada = False
+
+    def getDesistencia(self):
+        return self._desistiu_rodada
+    
+    def setDesistencia(self, desistencia = True):
+        self._desistiu_rodada = desistencia
 
     def getMao(self):
         return self._mao.getCartas()
@@ -50,13 +55,6 @@ class Jogador():
         self.adicionar_fichas(int(self._apostaAtual) / 2)
         self._apostaAtual = 0
         
-    def setTurno(self, bool = True):
-        self._primeira_jogada = bool
-        self._vezDeJogar = bool
-
-    def getTurno(self):
-        return self._vezDeJogar
-    
     def vitoria(self):
         self.adicionar_fichas(int(self._apostaAtual) * 2)
         self._apostaAtual = 0
@@ -67,14 +65,6 @@ class Jogador():
 
     def verificarMao(self):
         return self._mao.getValor()
-
-    def primeira_jogada(self):
-        return self._primeira_jogada
-    
-    def getJogando_rodada(self):
-        return self._jogando_rodada
-        #Informa se o jogador está jogando a rodada, ou seja, se não efetuou surrender durante a partida
-
 
     def adicionarCarta(self, carta: Carta):
         self._mao.adicionaCarta(carta)

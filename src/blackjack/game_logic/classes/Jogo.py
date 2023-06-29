@@ -8,19 +8,42 @@ class Jogo():
         self._baralho = Baralho()
         self._dealer = Dealer()
         self._jogadores = []
-        self._rodada = 0
+        self._rodada = 1
         self._jogador_jogando = 0
         self._etapa_jogadas = False
         self._etapa_aposta = False
         self._etapa_jogadaDealer = False
 
+    def criarBaralho(self, primeiro = True, numeros = [], naipes = []):
+        self._baralho.criar_baralho(primeiro, numeros, naipes)
+
+    def getRodada(self):
+        return self._rodada
+
+    def criaNotificacao(self, jogada, local, resultado, position):
+        jogador = self.getJogadorByPosition(position)
+        if local == 1:
+            notificacao = f'{jogada}\nVocê '
+        else:
+            notificacao = f'{jogada}\n{jogador.getNome()} '
+
+        if resultado == 'blackjack':
+            notificacao += "fez um blackjack"
+        else:
+            notificacao += resultado
+        return notificacao
+        
+    # -------------------------------------------------------------
+
     def resetRodada(self):
+        self._rodada += 1
         self._etapa_jogadas = False
         self._etapa_aposta = False
         self._etapa_jogadaDealer = False
-        self.setJogadorJogando(0)
+        self.setProximoJogador(0)
         self._dealer.resetCartas()
         for jogadores in self._jogadores:
+            jogadores.setDesistencia(False)
             jogadores.resetCartas()
 
     def getCartasDealer(self):
@@ -40,7 +63,7 @@ class Jogo():
             if jogador.getPosition() == position:
                 return jogador
 
-    def setJogadorJogando(self, jogador_jogando = -1):
+    def setProximoJogador(self, jogador_jogando = -1):
         if jogador_jogando >= 0:
             self._jogador_jogando = jogador_jogando
         else:
@@ -55,72 +78,57 @@ class Jogo():
     def setJogadaDealer(self, jogada_dealer):
         self._etapa_jogadaDealer = jogada_dealer
 
-    def hit(self, position):
+    def hit(self, position, local = 0):
         jogador = self.getJogadorByPosition(position)
         self.receber_carta_jogador(jogador)
 
-        valorD_mao = jogador.verificarMao()
-        if valorD_mao < 21:
-            resultado = " "
+        valorMao = jogador.verificarMao()
+        if valorMao < 21:
+            resultado = self.criaNotificacao('HIT', local, 'não estourou', position)
         else:
-            if valorD_mao == 21:
-                resultado = self.notifica_BlackJack()
-            elif valorD_mao > 21:
-                resultado = self.notifica_derrota()
-            if position == len(self._jogadores) - 1:
+            if valorMao == 21:
+                resultado = self.criaNotificacao('HIT', local, 'blackjack', position)
+            elif valorMao > 21:
+                resultado = self.criaNotificacao('HIT', local, 'perdeu', position)
+            if position == 2: # ultimo jogador
                 self.setJogadaDealer(True)
-            jogador.setTurno(False)
-            self.setJogadorJogando()
-            return resultado
-        
+            self.setProximoJogador()
+        return resultado
 
-    def double(self, position):
+    def double(self, position, local = 0):
         jogador = self.getJogadorByPosition(position)
         fichas = jogador.getAposta()
-        fichas_suficientes = jogador.avaliarAposta(fichas)
-        notificacao = ''
-        if fichas_suficientes:
-            jogador.dobrarAposta()
-            jogador.retirar_fichas(fichas)
-            self.receber_carta_jogador(jogador)
-            valorDM = jogador.verificarMao()
-            if valorDM > 21:
-                notificacao = self.notifica_derrota()
-            elif valorDM == 21:
-                notificacao = self.notifica_BlackJack()
-            if position == len(self._jogadores) - 1:
-                self.setJogadaDealer(True)
-            jogador.setTurno(False)
-            self.setJogadorJogando()
-        return notificacao
-
-    def stand(self, position):
-        jogador = self.getJogadorByPosition(position)
-        jogador.setTurno(False)
-        if position == len(self._jogadores) - 1:
+        jogador.dobrarAposta()
+        jogador.retirar_fichas(fichas)
+        self.receber_carta_jogador(jogador)
+        valorMao = jogador.verificarMao()
+        resultado = ''
+        if valorMao < 21:
+            resultado = self.criaNotificacao('DOUBLE', local, 'não estourou', position)
+        elif valorMao > 21:
+            resultado = self.criaNotificacao('DOUBLE', local, 'perdeu', position)
+        elif valorMao == 21:
+            resultado = self.criaNotificacao('DOUBLE', local, 'blackjack', position)
+        if position == 2: # ultimo jogador
             self.setJogadaDealer(True)
-        self.setJogadorJogando()
+        self.setProximoJogador()
+        return resultado
 
-    def surrender(self, position):
+    def stand(self, position, local = 0):
         jogador = self.getJogadorByPosition(position)
-        jogador.setTurno(False)
+        if position == 2: # ultimo jogador
+            self.setJogadaDealer(True)
+        self.setProximoJogador()
+        return self.criaNotificacao('STAND', local, 'parou', position)
+
+    def surrender(self, position, local = 0):
+        jogador = self.getJogadorByPosition(position)
         jogador.devolver_metade_aposta()
-        if position == len(self._jogadores) - 1:
+        jogador.setDesistencia()
+        if position == 2: # ultimo jogador
             self.setJogadaDealer(True)
-        self.setJogadorJogando()
-        return self.notificar_desistencia()
-
-    def notifica_BlackJack(self):
-        return "Blackjack"
-
-    def notifica_derrota(self):
-        return "Derrota"
-
-    def notificar_desistencia(self):
-        return "Desistencia"
-
-    def quantidade_de_jogadores(self):
-        return len(self._jogadores)
+        self.setProximoJogador()
+        return self.criaNotificacao('SURRENDER', local, 'desistiu', position)
 
     def iniciar_partida(self):
         self.distribuir_cartas()
@@ -138,7 +146,7 @@ class Jogo():
     def avaliar_aposta(self, fichas, position):
         jogador = self.getJogadorByPosition(position)
         if jogador.avaliarAposta(fichas):
-            if position == len(self._jogadores) - 1:
+            if position == 2: # ultimo jogador
                 self.fimTurnoAposta()
             return "Aposta feita com sucesso"
         else:
@@ -151,52 +159,21 @@ class Jogo():
     def fimTurnoJogadas(self):
         self._etapa_jogadas = False
 
-    def receive_hit(self, position):
-        jogador = self.getJogadorByPosition(position)
-        resultado = self.hit(position)
-        notificacao = f"Jogador {position} - {jogador.getNome()} pegou mais uma carta: HIT\n"
-        return notificacao, resultado
-        #return f"Jogador {position} - {jogador.getNome()} pegou mais uma carta: HIT\n{notificacao}"
-
-    def receive_double(self, position):
-        jogador = self.getJogadorByPosition(position)
-        notificacao = self.double(position)
-        return f"Jogador {position} - {jogador.getNome()} dobrou aposta e pegou mais uma carta: DOUBLE\n{notificacao}"
-
-    def receive_stand(self, position):
-        jogador = self.getJogadorByPosition(position)
-        notificacao = self.stand(position)
-        return f"Jogador {position} - {jogador.getNome()} passou a vez: STAND\n{notificacao}"
-
-    def receive_surrender(self, position):
-        jogador = self.getJogadorByPosition(position)
-        notificacao = self.surrender(position)
-        return f"Jogador {position} - {jogador.getNome()} se rendeu. Metade das fichas foram devolvidas: SURRENDER\n{notificacao}"
-
     def receive_vitoria(self, position):
         jogador = self.getJogadorByPosition(position)
         jogador.vitoria()
         return f"Você ganhou! :)"
-        return f"Jogador {position} - {jogador.getNome()} ganhou do dealer/voce"
 
     def receive_empate(self, position):
         jogador = self.getJogadorByPosition(position)
         jogador.empate()
         return f"Você empatou!"
-        return f"Jogador {position} - {jogador.getNome()} empatou contra o dealer/voce"
 
-    def receive_derrota(self, position):
-        jogador = self.getJogadorByPosition(position)
+    def receive_derrota(self): # Não faz nada, pois o saldo ja foi deduzido
         return f"Você perdeu! :("
-        return f"Jogador {position} - {jogador.getNome()} perdeu/voce"
 
-    def notificacao_derrota(self, position):
-        jogador = self.getJogadorByPosition(position)
-        return f"Jogador {position} - {jogador.getNome()} perdeu"
-
-    def notificacao_blackjack(self, position):
-        jogador = self.getJogadorByPosition(position)
-        return f"Jogador {position} - {jogador.getNome()} fez um BlackJack"
+    def receive_desistencia(self): # Não faz nada, pois o saldo ja foi calculado
+        return f"Você desistiu!"
 
     def receber_carta_jogador(self, jogador):
         carta = self._baralho.retirar_carta()
@@ -215,7 +192,7 @@ class Jogo():
     def jogadaDealer(self):
         jogadas = []
         valorD = self._dealer.verificarMao()
-        while valorD < 17:
+        while valorD <= 17:
             self.receber_carta_dealer()
             valorD = self._dealer.verificarMao()
 
@@ -224,7 +201,9 @@ class Jogo():
             jogador = self.getJogadorByPosition(j)
             valorJ = jogador.verificarMao()
 
-            if (valorJ > valorD and valorJ <= 21) or (valorD > 21 and valorJ <= 21):
+            if jogador.getDesistencia():
+                resultado = 'desistencia'
+            elif (valorJ > valorD and valorJ <= 21) or (valorD > 21 and valorJ <= 21):
                 resultado = 'vitoria'
             elif valorJ == valorD and valorJ <= 21:
                 resultado = 'empate'
