@@ -38,9 +38,9 @@ class Jogador():
         self._fichas -= int(aposta)
 
     def avaliarAposta(self, fichas):
-        if (int(self._fichas) - int(fichas)) >= 0:
-            return True
-        return False
+        if int(fichas) <= 0:
+            return False
+        return (int(self._fichas) - int(fichas) >= 0)
 
     def dobrarAposta(self):
         self._apostaAtual = int(self._apostaAtual) * 2

@@ -22,10 +22,11 @@ class PlayerInterface(PyNetgamesServerListener):
 		self.mainWindow.resizable(False, False)
 		self.mainWindow["bg"]="green"
 
-		self.player_name = self.dialog_string("Insira seu nome")
-		# self.player_name = 'Nome'
+		# self.player_name = self.dialog_string("Insira seu nome")
+		self.player_name = 'Nome'
 
 		self.set_player_frames()
+		self.set_dealer_frames()
 
 		# Label para nome do dealer
 		self.dealer_label = Label(self.mainWindow, bg="gray", text='Dealer', font="Arial 17 bold")
@@ -126,12 +127,16 @@ class PlayerInterface(PyNetgamesServerListener):
 			for carta in jogador.getMao():
 				self.add_card_jogador(index, carta)
 
-	def update_dealer_hand(self):
+	def update_dealer_hand(self, aposta = 0):
 		self.set_dealer_frames()
 		self.cartas_dealer = []
 		self.grid_dealer = []
-		for carta in self.jogo.getCartasDealer():
-			self.add_card_dealer(carta)
+		if aposta == 1:
+			self.add_card_dealer(self.jogo.getCartasDealer()[0])
+			self.add_card_dealer('back')
+		else:
+			for carta in self.jogo.getCartasDealer():
+				self.add_card_dealer(carta)
 
 	def add_card_jogador(self, numero_jogador, carta):
 		self.cartas.append(PhotoImage(file=os.path.join(os.path.dirname(__file__), "images/cards/" + carta + ".png")))
@@ -162,7 +167,7 @@ class PlayerInterface(PyNetgamesServerListener):
 			if self.jogador.getPosition() == 2: # ultimo jogador
 				self.jogo.fimTurnoAposta()
 				self.update_player_hand()
-				self.update_dealer_hand()
+				self.update_dealer_hand(1)
 				self.jogo.setProximoJogador(0)
 				if self.jogador.getPosition() == 0 and self.jogo.getTurnoJogador():
 					self.jogador.setTurno()
@@ -270,7 +275,6 @@ class PlayerInterface(PyNetgamesServerListener):
 		print('--------------\nPARTIDA INICIADA')
 
 		self.match_id = match.match_id
-		self.player_position = match.position
 		self.jogo = Jogo()
 
 		# Instancia o jogador local
@@ -289,6 +293,7 @@ class PlayerInterface(PyNetgamesServerListener):
 				'position': match.position
 			}
 		})
+
 
 	def create_suffle_and_send_baralho(self):
 		baralho = Baralho()
@@ -331,8 +336,10 @@ class PlayerInterface(PyNetgamesServerListener):
 				self.jogo.setJogadores(self.jogadores)
 				for i, jog in enumerate(self.jogadores):
 					self.add_player_label(jog.getNome(), 100, 0, i)
+				self.deal_cartas_para_baixo()
 				self.jogo.iniciar_partida()
 				self.turno_aposta()
+				self.notificacao("Rodada: 1")
 
 		if payload['jogada'] == "hit":
 			notificacao = self.jogo.hit(payload['jogador'])
@@ -392,7 +399,7 @@ class PlayerInterface(PyNetgamesServerListener):
 			if position == 2: # Se for ultimo jogador
 				self.jogo.fimTurnoAposta()
 				self.update_player_hand()
-				self.update_dealer_hand()
+				self.update_dealer_hand(1)
 				self.jogo.setProximoJogador(0)
 				if self.jogador.getPosition() == 0 and self.jogo.getTurnoJogador():
 					self.enable_buttons()
@@ -428,6 +435,7 @@ class PlayerInterface(PyNetgamesServerListener):
 				for jogador in self.jogo.getJogadores():
 					resultado += f'{jogador.getNome()} - {jogador.getFichas()}\n'
 				messagebox.showinfo("Fim do jogo", resultado)
+				return
 
 		if payload['jogada'] == "proxima_rodada":
 			self.proxima_rodada()
@@ -437,6 +445,13 @@ class PlayerInterface(PyNetgamesServerListener):
 			if jogador.getFichas() == 0:
 				return True
 		return False
+	
+	def deal_cartas_para_baixo(self):
+		self.add_card_dealer('back')
+		self.add_card_dealer('back')
+		for i in self.jogo.getJogadores():
+			self.add_card_jogador(i.getPosition(), 'back')
+			self.add_card_jogador(i.getPosition(), 'back')
 
 	def proxima_rodada(self):
 
@@ -452,12 +467,15 @@ class PlayerInterface(PyNetgamesServerListener):
 		self.jogo.resetRodada()
 		self.notificacao(f'Rodada: {self.jogo.getRodada()}')
 		
+		self.update_dealer_hand()
+		self.update_player_hand()
+
+		self.deal_cartas_para_baixo()
+		
 		if self.jogador.getPosition() == 2: # ultimo jogador da as cartas
 			self.create_suffle_and_send_baralho()
 		self.jogo.iniciar_partida()
 		self.turno_aposta()
-		self.update_player_hand()
-		self.update_dealer_hand()
 
 	def jogada_dealer(self):
 		resultados = self.jogo.jogadaDealer()
