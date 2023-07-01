@@ -278,13 +278,9 @@ class PlayerInterface(PyNetgamesServerListener):
 		self.notificacao("Jogo finalizado")
 		messagebox.showinfo("Jogador se desconectou!", "Clique OK para se conectar novamente ao servidor")
 
+		self.resetInterface()
 		self.jogo.resetJogo()
-		self.grid_dealer = []
-		self.grid_jogadores = []
-		self.cartas_dealer = []
-		self.cartas = []
-		self.valor_aposta = 0
-		self.disable_buttons()
+
 		self.entry_aposta.delete(0, END)
 
 		self.send_connect()
@@ -315,6 +311,14 @@ class PlayerInterface(PyNetgamesServerListener):
 			}
 		})
 
+	def resetInterface(self):
+		self.grid_dealer = []
+		self.grid_jogadores = []
+		self.cartas_dealer = []
+		self.cartas = []
+		self.valor_aposta = 0
+		self.entry_aposta.delete(0, END)
+		self.disable_buttons()
 
 	def create_suffle_and_send_baralho(self):
 		baralho = Baralho()
@@ -476,16 +480,9 @@ class PlayerInterface(PyNetgamesServerListener):
 
 	def proxima_rodada(self):
 
-		self.grid_dealer = []
-		self.grid_jogadores = []
-		self.cartas_dealer = []
-		self.cartas = []
-		self.valor_aposta = 0
-
-		self.disable_buttons()
-
-		self.entry_aposta.delete(0, END)
+		self.resetInterface()
 		self.jogo.resetRodada()
+		
 		self.notificacao(f'Rodada: {self.jogo.getRodada()}')
 		
 		self.update_dealer_hand()
