@@ -22,8 +22,8 @@ class PlayerInterface(PyNetgamesServerListener):
 		self.mainWindow.resizable(False, False)
 		self.mainWindow["bg"]="green"
 
-		self.player_name = self.dialog_string("Insira seu nome")
-		#self.player_name = 'Nome'
+		# self.player_name = self.dialog_string("Insira seu nome")
+		self.player_name = 'Nome'
 
 		self.set_player_frames()
 		self.set_dealer_frames()
@@ -275,7 +275,19 @@ class PlayerInterface(PyNetgamesServerListener):
 		self.send_match()
 
 	def receive_disconnect(self):
-		print('receive_disconnect')
+		self.notificacao("Jogo finalizado")
+		messagebox.showinfo("Jogador se desconectou!", "Clique OK para se conectar novamente ao servidor")
+
+		self.jogo.resetJogo()
+		self.grid_dealer = []
+		self.grid_jogadores = []
+		self.cartas_dealer = []
+		self.cartas = []
+		self.valor_aposta = 0
+		self.disable_buttons()
+		self.entry_aposta.delete(0, END)
+
+		self.send_connect()
 
 	def receive_error(self, error):
 		print('receive_error', error)

@@ -35,6 +35,16 @@ class Jogo():
         
     # -------------------------------------------------------------
 
+    def resetJogo(self):
+        self._baralho = Baralho()
+        self._dealer = Dealer()
+        self._jogadores = []
+        self._rodada = 1
+        self._jogador_jogando = 0
+        self._etapa_jogadas = False
+        self._etapa_aposta = False
+        self._etapa_jogadaDealer = False
+
     def resetRodada(self):
         self._rodada += 1
         self._etapa_jogadas = False
