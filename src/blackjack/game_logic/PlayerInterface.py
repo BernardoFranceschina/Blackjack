@@ -22,8 +22,8 @@ class PlayerInterface(PyNetgamesServerListener):
 		self.mainWindow.resizable(False, False)
 		self.mainWindow["bg"]="green"
 
-		# self.player_name = self.dialog_string("Insira seu nome")
-		self.player_name = 'Nome'
+		self.player_name = self.dialog_string("Insira seu nome")
+		#self.player_name = 'Nome'
 
 		self.set_player_frames()
 		self.set_dealer_frames()
@@ -67,6 +67,8 @@ class PlayerInterface(PyNetgamesServerListener):
 		self.input_aposta.geometry('300x100')
 		self.input_aposta.withdraw()
 
+		
+
 		Label(self.input_aposta, text="Insira sua aposta - " + self.player_name, font="Arial 12 bold").pack()
 		self.entry_aposta=Entry(self.input_aposta, width=35)
 		self.entry_aposta.pack()
@@ -85,6 +87,7 @@ class PlayerInterface(PyNetgamesServerListener):
 		answer = simpledialog.askinteger("", msg, parent=self.mainWindow)
 		return answer
 
+	# Desabilita todos os botões, exceto quando a jogada é 'hit', nesse caso deixa os botões hit e stand habilitados
 	def disable_buttons(self, jogada = ''):
 		if jogada != 'hit':
 			self.player_hit_button.configure(state='disable')
@@ -92,12 +95,14 @@ class PlayerInterface(PyNetgamesServerListener):
 		self.player_double_button.configure(state='disable')
 		self.player_surrender_button.configure(state='disable')
 
+	# Habilita todos os botões, utilizado quando for a vez do jogador
 	def enable_buttons(self):
 		self.player_hit_button.configure(state='normal')
 		self.player_stand_button.configure(state='normal')
 		self.player_double_button.configure(state='normal')
 		self.player_surrender_button.configure(state='normal')
 
+	# Adiciona os labels como nome do jogador, as fichas e a aposta atual do jogador
 	def add_player_label(self, jogador, fichas, aposta, numero_jogador):
 		self.jogador_label.append(Label(self.mainWindow, bg="gray", text=jogador, font="Arial 17 bold"))
 		self.jogador_label[numero_jogador].place(relx=(numero_jogador+1) * 0.25, rely=0.60, anchor=CENTER)
@@ -106,19 +111,23 @@ class PlayerInterface(PyNetgamesServerListener):
 		self.aposta_label.append(Label(self.mainWindow, bg="gray", text='Aposta: ' + str(aposta), font="Arial 12"))
 		self.aposta_label[numero_jogador].place(relx=(numero_jogador+1) * 0.25, rely=0.66, anchor=CENTER)
 
+	# Função utilizada para atualizar a quantidade de fichas e a aposta atual do jogador, utilizada quando é feito uma aposta, double, ou o jogador é pago
 	def update_player_label(self, fichas, aposta, numero_jogador):
 		self.fichas_label[numero_jogador].config(text='Fichas: ' + str(fichas))
 		self.aposta_label[numero_jogador].config(text='Aposta: ' + str(aposta))
 
+	# Cria o frame do Dealer
 	def set_dealer_frames(self):
 		self.frame_cartas_dealer = Frame(self.mainWindow, bg='green', width=400, height=300)
 		self.frame_cartas_dealer.place(relx=0.5, rely=0.15, anchor=CENTER)
 
+	# Cria os frames do jogador
 	def set_player_frames(self):
 		self.frames_jogadores = [Frame(self.mainWindow, bg='green',  width=349, height=200) for i in range(3)]
 		for index, frame_jogador in enumerate(self.frames_jogadores):
 			frame_jogador.place(relx=(index+1)*0.25, rely=0.75, anchor=CENTER)
 
+	
 	def update_player_hand(self):
 		self.set_player_frames()
 		self.cartas = []
@@ -419,7 +428,7 @@ class PlayerInterface(PyNetgamesServerListener):
 				if dic['jogada'] == 'desistencia':
 					notificacao = self.jogo.receive_desistencia()
 				if dic['jogada'] == 'derrota':
-					notificacao = self.jogo.receive_derrota()
+					notificacao = self.jogo.receive_derrota(dic['jogador'])
 				if dic['jogada'] == 'vitoria':
 					notificacao = self.jogo.receive_vitoria(dic['jogador'])
 				if dic['jogada'] == 'empate':
@@ -490,7 +499,7 @@ class PlayerInterface(PyNetgamesServerListener):
 			if dic['jogada'] == 'desistencia':
 				notificacao = self.jogo.receive_desistencia()
 			if dic['jogada'] == 'derrota':
-				notificacao = self.jogo.receive_derrota()
+				notificacao = self.jogo.receive_derrota(dic['jogador'])
 			if dic['jogada'] == 'vitoria':
 				notificacao = self.jogo.receive_vitoria(dic['jogador'])
 			if dic['jogada'] == 'empate':

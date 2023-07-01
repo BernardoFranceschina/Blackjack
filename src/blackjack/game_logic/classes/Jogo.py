@@ -169,7 +169,9 @@ class Jogo():
         jogador.empate()
         return f"Você empatou!"
 
-    def receive_derrota(self): # Não faz nada, pois o saldo ja foi deduzido
+    def receive_derrota(self, position): # Define aposta como 0 para inicio da próxima rodada
+        jogador = self.getJogadorByPosition(position)
+        jogador.setAposta(0)
         return f"Você perdeu! :("
 
     def receive_desistencia(self): # Não faz nada, pois o saldo ja foi calculado
