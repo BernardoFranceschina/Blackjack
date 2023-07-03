@@ -10,10 +10,12 @@ class Baralho:
         if primeiro:
             for numero in Carta.cartasNumeros:
                 for naipe in Carta.cartasNaipes:
-                    self._baralho.append(Carta(numero, naipe))
+                    carta = Carta(numero, naipe)
+                    self._baralho.append(carta)
         else:
             for i in range(len(numeros)):
-                self._baralho.append(Carta(numeros[i], naipes[i]))
+                carta = Carta(numeros[i], naipes[i])
+                self._baralho.append(carta)
 
     def retirar_carta(self):
         return self._baralho.pop()

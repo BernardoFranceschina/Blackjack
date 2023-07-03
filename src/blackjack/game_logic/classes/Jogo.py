@@ -70,7 +70,8 @@ class Jogo():
 
     def getJogadorByPosition(self, position):
         for jogador in self._jogadores:
-            if jogador.getPosition() == position:
+            posicao_atual = jogador.getPosition()
+            if posicao_atual == position:
                 return jogador
 
     def setProximoJogador(self, jogador_jogando = -1):

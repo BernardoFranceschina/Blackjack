@@ -42,7 +42,6 @@ class PlayerInterface(PyNetgamesServerListener):
 		self.jogadores = []
 		self.jogador = ''
 		self.valor_aposta = 0
-		self.jogo = Jogo()
 
 		# Botões das opções dos players
 		self.player_hit_button = Button(self.mainWindow, bg="gray", text='Hit', font="Arial 14 bold", command=self.hit)
@@ -67,12 +66,10 @@ class PlayerInterface(PyNetgamesServerListener):
 		self.input_aposta.geometry('300x100')
 		self.input_aposta.withdraw()
 
-		
-
-		Label(self.input_aposta, text="Insira sua aposta - " + self.player_name, font="Arial 12 bold").pack()
+		self.label_aposta = Label(self.input_aposta, text="Insira sua aposta - " + self.player_name, font="Arial 12 bold").pack()
 		self.entry_aposta=Entry(self.input_aposta, width=35)
 		self.entry_aposta.pack()
-		Button(self.input_aposta, text="Apostar", command=lambda: self.aposta()).pack()
+		self.button_aposta =Button(self.input_aposta, text="Apostar", command=lambda: self.aposta()).pack()
 		
 		self.mainWindow.mainloop()
 
@@ -185,10 +182,12 @@ class PlayerInterface(PyNetgamesServerListener):
 			self.openAposta()
 
 	def hit(self):
-		notificacao = self.jogo.hit(self.jogador.getPosition(), 1)
+		posicao_local = self.jogador.getPosition()
+		notificacao = self.jogo.hit(posicao_local, 1)
 		self.notificacao(notificacao)
 		
-		if self.jogador.getPosition() != self.jogo.getJogadorJogando():
+		jogador_jogando = self.jogo.getJogadorJogando()
+		if posicao_local != jogador_jogando:
 			self.disable_buttons()
 
 		if "estourou" in notificacao:
@@ -196,39 +195,42 @@ class PlayerInterface(PyNetgamesServerListener):
 		
 		self.send_move({
 			'jogada': 'hit',
-			'jogador': self.jogador.getPosition()
+			'jogador': posicao_local
 		})
 		self.update_player_hand()
 		if self.jogo.getJogadaDealer():
 			self.jogada_dealer()		
 
 	def stand(self):
-		notificacao = self.jogo.stand(self.jogador.getPosition(), 1)
+		posicao_local = self.jogador.getPosition()
+		notificacao = self.jogo.stand(posicao_local, 1)
 		self.notificacao(notificacao)
 
 		self.disable_buttons()
 		self.send_move({
 			'jogada': 'stand',
-			'jogador': self.jogador.getPosition()
+			'jogador': posicao_local
 		})
 		self.update_player_hand()
 		if self.jogo.getJogadaDealer():
 			self.jogada_dealer()
 
 	def double(self):
-		jogador = self.jogo.getJogadorByPosition(self.jogador.getPosition())
-		fichas_suficientes = jogador.avaliarAposta(jogador.getAposta()*2)
+		posicao_local = self.jogador.getPosition()
+		jogador = self.jogo.getJogadorByPosition(posicao_local)
+		aposta = jogador.getAposta()
+		fichas_suficientes = jogador.avaliarAposta(aposta*2)
 		if not fichas_suficientes:
 			messagebox.showinfo("Erro!", "Fichas insuficientes")
 			return
 
-		notificacao = self.jogo.double(self.jogador.getPosition(), 1)
+		notificacao = self.jogo.double(posicao_local, 1)
 		self.notificacao(notificacao)
 
 		self.disable_buttons()
 		self.send_move({
 			'jogada': 'double',
-			'jogador': self.jogador.getPosition()
+			'jogador': posicao_local
 		})
 
 		self.update_player_label(jogador.getFichas(), jogador.getAposta(), jogador.getPosition())
@@ -238,16 +240,17 @@ class PlayerInterface(PyNetgamesServerListener):
 			self.jogada_dealer()
 
 	def surrender(self):
-		notificacao = self.jogo.surrender(self.jogador.getPosition(), 1)
+		posicao_jogador = self.jogador.getPosition()
+		notificacao = self.jogo.surrender(posicao_jogador, 1)
 		self.notificacao(notificacao)
 
 		self.disable_buttons()
 		self.send_move({
 			'jogada': 'surrender',
-			'jogador': self.jogador.getPosition()
+			'jogador': posicao_jogador
 		})
 
-		jogador = self.jogo.getJogadorByPosition(self.jogador.getPosition())
+		jogador = self.jogo.getJogadorByPosition(posicao_jogador)
 		self.update_player_label(jogador.getFichas(), jogador.getAposta(), jogador.getPosition())
 		self.update_player_hand()
 
@@ -343,7 +346,9 @@ class PlayerInterface(PyNetgamesServerListener):
 
 	def turno_aposta(self):
 		if self.jogo.getTurnoAposta():
-			if self.jogo.getJogadorJogando() == self.jogador.getPosition():
+			posicao_local = self.jogador.getPosition()
+			jogador_jogando = self.jogo.getJogadorJogando()
+			if posicao_local == jogador_jogando:
 				self.openAposta()
 
 	def receive_move(self, message):
@@ -370,7 +375,9 @@ class PlayerInterface(PyNetgamesServerListener):
 			notificacao = self.jogo.hit(payload['jogador'])
 			self.notificacao(notificacao)
 			
-			if self.jogador.getPosition() == self.jogo.getJogadorJogando():
+			posicao_local = self.jogador.getPosition()
+			jogador_jogando = self.jogo.getJogadorJogando()
+			if posicao_local == jogador_jogando:
 				self.enable_buttons()
 			else:
 				self.disable_buttons()
@@ -382,7 +389,9 @@ class PlayerInterface(PyNetgamesServerListener):
 			notificacao = self.jogo.stand(payload['jogador'])
 			self.notificacao(notificacao)
 			
-			if self.jogador.getPosition() == self.jogo.getJogadorJogando():
+			posicao_local = self.jogador.getPosition()
+			jogador_jogando = self.jogo.getJogadorJogando()
+			if posicao_local == jogador_jogando:
 				self.enable_buttons()
 			else:
 				self.disable_buttons()
@@ -391,7 +400,9 @@ class PlayerInterface(PyNetgamesServerListener):
 			notificacao = self.jogo.double(payload['jogador'])
 			self.notificacao(notificacao)
 			
-			if self.jogador.getPosition() == self.jogo.getJogadorJogando():
+			posicao_local = self.jogador.getPosition()
+			jogador_jogando = self.jogo.getJogadorJogando()
+			if posicao_local == jogador_jogando:
 				self.enable_buttons()
 			else:
 				self.disable_buttons()
@@ -404,7 +415,9 @@ class PlayerInterface(PyNetgamesServerListener):
 			notificacao = self.jogo.surrender(payload['jogador'])
 			self.notificacao(notificacao)
 			
-			if self.jogador.getPosition() == self.jogo.getJogadorJogando():
+			posicao_local = self.jogador.getPosition()
+			jogador_jogando = self.jogo.getJogadorJogando()
+			if posicao_local == jogador_jogando:
 				self.enable_buttons()
 			else:
 				self.disable_buttons()
@@ -426,12 +439,16 @@ class PlayerInterface(PyNetgamesServerListener):
 				self.update_player_hand()
 				self.update_dealer_hand(1)
 				self.jogo.setProximoJogador(0)
-				if self.jogador.getPosition() == 0 and self.jogo.getTurnoJogador():
+				posicao_local = self.jogador.getPosition()
+				turno_jogador = self.jogo.getTurnoJogador()
+				if posicao_local == 0 and turno_jogador:
 					self.enable_buttons()
 		
 			if self.jogo.getTurnoAposta():
 				self.jogo.setProximoJogador()
-				if self.jogo.getJogadorJogando() == self.jogador.getPosition():
+				posicao_local = self.jogador.getPosition()
+				jogador_jogando = self.jogo.getJogadorJogando()
+				if posicao_local == jogador_jogando:
 					self.openAposta()
 
 		if payload['jogada'] == "resultados":
