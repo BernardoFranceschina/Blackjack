@@ -13,12 +13,16 @@ class Jogo():
         self._etapa_jogadas = False
         self._etapa_aposta = False
         self._etapa_jogadaDealer = False
+        self._jogadas = []
 
     def criarBaralho(self, primeiro = True, numeros = [], naipes = []):
         self._baralho.criar_baralho(primeiro, numeros, naipes)
 
     def getRodada(self):
         return self._rodada
+    
+    def resetJogadas(self):
+        self._jogadas = []
 
     def criaNotificacao(self, jogada, local, resultado, position):
         jogador = self.getJogadorByPosition(position)
@@ -126,7 +130,7 @@ class Jogo():
         return resultado
 
     def stand(self, position, local = 0):
-        jogador = self.getJogadorByPosition(position)
+        #jogador = self.getJogadorByPosition(position)
         if position == 2: # ultimo jogador
             self.setJogadaDealer(True)
         self.setProximoJogador()
@@ -203,7 +207,7 @@ class Jogo():
             self.receber_carta_dealer()
     
     def jogadaDealer(self):
-        jogadas = []
+        self.resetJogadas()
         valorD = self._dealer.verificarMao()
         while valorD <= 17:
             self.receber_carta_dealer()
@@ -223,10 +227,10 @@ class Jogo():
             else:
                 resultado = 'derrota'
 
-            jogadas.append({
+            self._jogadas.append({
                 'jogada': resultado,
                 'jogador': jogador.getPosition()
             })
 
         self.setJogadaDealer(False)
-        return jogadas
+        return self._jogadas

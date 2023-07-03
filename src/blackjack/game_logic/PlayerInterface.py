@@ -22,8 +22,7 @@ class PlayerInterface(PyNetgamesServerListener):
 		self.mainWindow.resizable(False, False)
 		self.mainWindow["bg"]="green"
 
-		# self.player_name = self.dialog_string("Insira seu nome")
-		self.player_name = 'Nome'
+		self.player_name = self.dialog_string("Insira seu nome")
 
 		self.set_player_frames()
 		self.set_dealer_frames()
@@ -51,7 +50,7 @@ class PlayerInterface(PyNetgamesServerListener):
 		self.player_surrender_button = Button(self.mainWindow, bg="gray", text='Surrender', font="Arial 14 bold", command=self.surrender)
 		self.player_surrender_button.place(relx=0.65, rely=0.35, anchor=CENTER, width=140)
 
-		self.label_notificacao = Label(self.mainWindow, bg="green", text='', font="Arial 17 bold")
+		self.label_notificacao = Label(self.mainWindow, bg="green", text='BlackJack', font="Arial 17 bold")
 		self.label_notificacao.place(relx=0.5, rely=0.45, anchor=CENTER, width=1400)
 
 		self.disable_buttons()
@@ -76,10 +75,6 @@ class PlayerInterface(PyNetgamesServerListener):
 
 	def dialog_string(self, msg):
 		answer = simpledialog.askstring(" ", msg, parent=self.mainWindow)
-		return answer
-
-	def dialog_int(self, msg):
-		answer = simpledialog.askinteger("", msg, parent=self.mainWindow)
 		return answer
 
 	# Desabilita todos os botões, exceto quando a jogada é 'hit', nesse caso deixa os botões hit e stand habilitados
