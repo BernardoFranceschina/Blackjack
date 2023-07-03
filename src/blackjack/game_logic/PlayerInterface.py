@@ -39,8 +39,6 @@ class PlayerInterface(PyNetgamesServerListener):
 		self.jogador_label = []
 		self.fichas_label = []
 		self.aposta_label = []
-		self.jogadores = []
-		self.jogador = ''
 		self.valor_aposta = 0
 
 		# Botões das opções dos players
@@ -541,6 +539,7 @@ class PlayerInterface(PyNetgamesServerListener):
 			for jogador in self.jogo.getJogadores():
 				resultado += f'{jogador.getNome()} - {jogador.getFichas()}\n'
 			messagebox.showinfo("Fim do jogo", resultado)
+			return
 
 		self.proxima_rodada()
 		self.send_move({
